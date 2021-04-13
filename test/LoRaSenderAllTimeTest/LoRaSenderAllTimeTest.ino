@@ -29,12 +29,7 @@ void setup() {
   LoRa.setSignalBandwidth(7.8E3);
   LoRa.setCodingRate4(5);
   LoRa.setTxPower(14,RF_PACONFIG_PASELECT_PABOOST);
-  /*bits = 8;
-  max_lim = pow(2,bits) - 1;
-  min_lim = pow(2,bits - 1);*/
   bits = random(0, 32);
-  //max_lim = pow(2,bits) - 1;
-  //min_lim = pow(2,bits - 1);*/
   Serial.println("BIT TEST:");
 }
 
@@ -118,13 +113,7 @@ void loop()
   }
 
   test_integer = random(min_lim,max_lim);
-  //Serial.print("Sending packet: ");
-  //Serial.println(test_integer);
-  //Serial.print("Sending Time: ");
-  
-  
-  /*Serial.print("\t");
-  Serial.println(bits);*/
+
   // send packet
   if (send_flag) {
     t0 = micros();
@@ -147,8 +136,5 @@ void loop()
     Serial.println(tf - t0);
     n++;
   }
-
-    
-  
   send_flag = true;
 }
