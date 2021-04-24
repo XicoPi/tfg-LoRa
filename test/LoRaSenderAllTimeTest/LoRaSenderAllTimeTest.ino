@@ -12,7 +12,7 @@
 #define BAND    868E6  //you can set band here directly,e.g. 868E6,915E6
 #define MAX_N 500
 
-uint32_t test_integer = 0;
+uint8_t test_integer = 0;
 uint32_t n = 0;
 uint8_t bits = 1, BW_i = 0, sFactor = 6, txpwr = 0;
 uint32_t max_lim = 255, min_lim = 0;
@@ -29,11 +29,13 @@ void setup() {
   LoRa.setSignalBandwidth(7.8E3);
   LoRa.setCodingRate4(5);
   LoRa.setTxPower(14,RF_PACONFIG_PASELECT_PABOOST);
-  bits = random(0, 32);
-  Serial.println("BIT TEST:");
+
+  bits = 8;
+  max_lim = pow(2,bits);
+  min_lim = pow(2, bits - 1);
 }
 
-static enum{SEND_LEN_BITS, SPREADING_FACTOR, BANDWIDTH, TX_PWR, END}experiment_state = SEND_LEN_BITS;
+static enum{SEND_LEN_BITS, SPREADING_FACTOR, BANDWIDTH, TX_PWR, END}experiment_state = SPREADING_FACTOR;
 static const long bandwidths[9] = {7.8E3, 10.4E3, 15.6E3, 20.8E3, 31.25E3, 41.7E3, 62.5E3, 125E3, 250E3};  
 static bool send_flag = true;
 
@@ -45,9 +47,7 @@ void loop()
   switch (experiment_state) {
     case SEND_LEN_BITS:
     
-    bits = random(0, 32);
-    max_lim = pow(2,bits);
-    min_lim = pow(2, bits - 1);
+    
     if (n == MAX_N) {
       n = 0;
       send_flag = false;
@@ -63,6 +63,7 @@ void loop()
     break;
 
     case SPREADING_FACTOR:
+    
     sFactor = random(6, 12 + 1);
     LoRa.setSpreadingFactor(sFactor);
     if (n == MAX_N) {
@@ -127,7 +128,7 @@ void loop()
 *   - RF_PACONFIG_PASELECT_RFO     -- LoRa single output via RFO_HF / RFO_LF, maximum output 14dBm
 */
 
-    LoRa.print(test_integer);
+    LoRa.write(test_integer);
     LoRa.endPacket();
   
     tf = micros();

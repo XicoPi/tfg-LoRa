@@ -66,7 +66,7 @@ void loop()
   //random(0, (2**8)-1) per un byte.
   Serial.print(tf - t0);
   Serial.print("\t");
-  Serial.print(n);
+  Serial.println(n);
 
   
   i++;
