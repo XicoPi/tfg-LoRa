@@ -35,6 +35,7 @@ void setup()
   i = 0;
   n = 0;
   test_integer[0] = random(min_lim,max_lim);
+  n++;
 }
 
 
@@ -43,38 +44,21 @@ void setup()
 void loop() 
 {
 
-  /*bits = 8; //random(0, 32);
-  max_lim = pow(2,bits);
-  min_lim = pow(2,bits - 1);*/
-  /*Serial.print("limits: ");
-  Serial.print(min_lim);
-  Serial.print(" ");
-  Serial.println(max_lim);
-  Serial.print("bits: ");*/
+  if (i == 10) {
+    i = 0;
+    test_integer[n] = random(min_lim,max_lim);
+    n++;
+  }
   
-  
-  //Serial.print("Sending packet: ");
-  //Serial.println(test_integer);
-  //Serial.print("Sending Time: ");
-  
-  
-  /*Serial.print("\t");
-  Serial.println(bits);*/
+
   // send packet
   t0 = micros();
 
   LoRa.beginPacket();
-/*
-* LoRa.setTxPower(txPower,RFOUT_pin);
-* txPower -- 0 ~ 20
-* RFOUT_pin could be RF_PACONFIG_PASELECT_PABOOST or RF_PACONFIG_PASELECT_RFO
-*   - RF_PACONFIG_PASELECT_PABOOST -- LoRa single output via PABOOST, maximum output 20dBm
-*   - RF_PACONFIG_PASELECT_RFO     -- LoRa single output via RFO_HF / RFO_LF, maximum output 14dBm
-*/
+ 
   
-  
-  
-  LoRa.print(test_integer);
+  //LoRa.print(test_integer);
+  LoRa.write(test_integer, n);
   LoRa.endPacket();
   tf = micros();
 
@@ -82,16 +66,10 @@ void loop()
   //random(0, (2**8)-1) per un byte.
   Serial.print(tf - t0);
   Serial.print("\t");
-  Serial.println(bits);
+  Serial.print(n);
 
-  if (i == 10) {
-    i = 0;
-    n++;
-    test_integer[n] = random(min_lim,max_lim);
-  }
-  else {
-    i++;
-  }
+  
+  i++;
 
 
   if (n == MAX_N) {
