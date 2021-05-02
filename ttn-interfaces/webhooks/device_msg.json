@@ -1,0 +1,54 @@
+{
+    "end_device_ids": {"device_id":"heltec-esp32-lora",
+		       "application_ids": {
+			   "application_id":"tfg-enric-garcia"
+		       },
+		       "dev_eui":"00DEACB0C6ABB5D2",
+		       "join_eui":"70B3D57ED0040582",
+		       "dev_addr":"260BF65F"
+		      },
+    
+    "correlation_ids": [
+	"as:up:01F4P3BHEYMM2VGHK3X1WBV87K",
+	"gs:conn:01F4P3ABED874BK1SV3KEH57RP",
+	"gs:up:host:01F4P3ABEHAEV6JARN2TG0GF20",
+	"gs:uplink:01F4P3BH8BAWXXK79EZBYTZW9B",
+	"ns:uplink:01F4P3BH8CKTQ74EP0NQQH8RDE",
+	"rpc:/ttn.lorawan.v3.GsNs/HandleUplink:01F4P3BH8C668MHXZNB4Z1KGDT",
+	"rpc:/ttn.lorawan.v3.NsAs/HandleUplink:01F4P3BHEXKQ2GGX7JXJ1W4N23"
+    ],
+    "received_at":"2021-05-02T08:33:12.158710620Z",
+    "uplink_message": {
+	"session_key_id":"AXksNTLW5GA4WDpueZKeUg==",
+	"f_port":2,
+	"f_cnt":2,
+	"frm_payload":"AAECAw==",
+	"rx_metadata": [{
+	    "gateway_ids": {
+		"gateway_id":"epsem-indoor-gw",
+		"eui":"5532322048002600"},
+	     
+	    "time":"2021-05-02T08:33:11.917133Z",
+	    "timestamp":45277945,
+	    "rssi":-89,
+	    "channel_rssi":-89,
+	    "snr":7.25,
+	    "uplink_token":"Ch0KGwoPZXBzZW0taW5kb29yLWd3EghVMjIgSAAmABD5xcsVGgwIx8e5hAYQvcruwwMgqLma1qgB",
+	    "channel_index":5
+	}],
+
+	"settings": {
+	    "data_rate": {
+		"lora": {
+		    "bandwidth":125000,
+		    "spreading_factor":7}},
+	    "data_rate_index":5,
+	    "coding_rate":"4/5",
+	    "frequency":"867500000",
+	    "timestamp":45277945,
+	    "time":"2021-05-02T08:33:11.917133Z"},
+	"received_at":"2021-05-02T08:33:11.948727926Z",
+	"confirmed":true,
+	"consumed_airtime":"0.051456s"
+    }
+}

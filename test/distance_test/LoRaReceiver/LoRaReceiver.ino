@@ -15,18 +15,21 @@
 void setup() {
     //WIFI Kit series V1 not support Vext control
   Heltec.begin(true /*DisplayEnable Enable*/, true /*Heltec.LoRa Disable*/, true /*Serial Enable*/, true /*PABOOST Enable*/, BAND /*long BAND*/);
-
+  LoRa.setSpreadingFactor(9);
+  LoRa.setSignalBandwidth(125E3);
+  //LoRa.setCodingRate4(5);
+  Serial.println("Setup done");
 }
 
 void loop() {
-  // try to parse packet
+  // try to parse packets
   int packetSize = LoRa.parsePacket();
   if (packetSize) {
     // received a packet
     Serial.print("Received packet '");
     // read packet
     while (LoRa.available()) {
-      Serial.print((char)LoRa.read());
+      Serial.print(LoRa.read());
     }
     // print RSSI of packet
     Serial.print("' with RSSI ");
