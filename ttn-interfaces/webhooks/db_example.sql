@@ -1,5 +1,5 @@
 create table if not exists application (
-       application_id varchar(255) primary key,
+       application_id varchar(255) primary key
 );
 
 create table if not exists devices (
@@ -22,6 +22,5 @@ create table if not exists uplink_messages (
        settings varchar(65535),
        confirmed boolean,
        consumed_airtime varchar(32),
-       foreign key device_id references (devices)
-       
+       foreign key (device_id) references devices
 );
