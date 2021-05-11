@@ -41,14 +41,60 @@
 	    "data_rate": {
 		"lora": {
 		    "bandwidth":125000,
-		    "spreading_factor":7}},
+		    "spreading_factor":7
+		}
+	    },
 	    "data_rate_index":5,
 	    "coding_rate":"4/5",
 	    "frequency":"867500000",
 	    "timestamp":45277945,
-	    "time":"2021-05-02T08:33:11.917133Z"},
+	    "time":"2021-05-02T08:33:11.917133Z"
+	},
 	"received_at":"2021-05-02T08:33:11.948727926Z",
 	"confirmed":true,
 	"consumed_airtime":"0.051456s"
     }
+}
+
+
+THE THINGS NODE UPLINK MESSAGE:
+"uplink_message":{
+    "session_key_id":"AXlLZBwB1MuYtJq8SG8SuQ==",
+    "f_port":2,
+    "f_cnt":10,
+    "frm_payload":"EsAAewr2",
+    "decoded_payload":{
+	"battery":4800,
+	"event":"interval",
+	"light":123,
+	"temperature":28.06
+    },
+    "rx_metadata":
+    [{
+	"gateway_ids":
+	{
+	    "gateway_id":"epsem-indoor-gw",
+	    "eui":"5532322048002600"},
+	"time":"2021-05-08T10:02:11.639718Z",
+	"timestamp":1995218804,
+	"rssi":-90,
+	"channel_rssi":-90,
+	"snr":9,
+	"uplink_token":"Ch0KGwoPZXBzZW0taW5kb29yLWd3EghVMjIgSAAmABD0vrK3BxoMCKPD2YQGEI/w+NgCIKC6u+KItwE=",
+	"channel_index":3
+    }],
+    "settings":{
+	"data_rate":{
+	    "lora":{
+		"bandwidth":125000,
+		"spreading_factor":7
+	    }},
+     "data_rate_index":5,
+     "coding_rate":"4/5",
+     "frequency":"867100000",
+	"timestamp":1995218804,
+	"time":"2021-05-08T10:02:11.639718Z"
+    },
+    "received_at":"2021-05-08T10:02:11.724340506Z",
+    "consumed_airtime":"0.051456s"
 }

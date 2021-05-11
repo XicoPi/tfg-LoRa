@@ -60,16 +60,17 @@ if __name__ == '__main__':
         "username": "tfg-enric-garcia",
         "password": "NNSXS.FYZDMZTFHFMNAKD2QRJL5N3CTNXCLOKXJH7EBQA.UYDB63MAB4CTWXSLRCXUM7O6NIEMUDVAPA2IBV6ARFJBIZZW4KCA"
     }
+    mqttTopics = ["v3/tfg-enric-garcia@ttn/devices/ttn-node-dev-1/up", "v3/tfg-enric-garcia@ttn/devices/heltec-esp32-lora/up"]
+
+    database_obj = db_utils.TTN_database(host="integracio.epsem.upc.edu",
+                                         user="enric",
+                                         password="loratfg2021",
+                                         database="loraTFG")
     
-
-    DB_filename = "database.db"
-    SQL_filename = "db_example.sql"
-    database_obj = db_utils.TTN_database(db_filename=DB_filename, sql_filename=SQL_filename)
-
     try:
         while (True):
             MQTT_message = subscribe.simple(
-                topics="v3/tfg-enric-garcia@ttn/devices/ttn-node-dev-1/up", #"v3/tfg-enric-garcia@ttn/devices/heltec-esp32-lora/up",
+                topics=mqttTopics,
                 auth=ttnAuthCredentials,
                 hostname="eu1.cloud.thethings.network",
                 port=1883)

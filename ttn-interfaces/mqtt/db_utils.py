@@ -1,7 +1,10 @@
 import sys
-import sqlite3 as sql
+import mysql.connector as sql
+import contextlib
+
 from typing import Dict
 from dataclasses import dataclass
+from datetime import datetime
 
 TTN_app_id_t = str
 TTN_dev_id_t = str
@@ -32,49 +35,66 @@ class uplink_msg_t(Dict):
     consumed_airtime: str #[32]
 #    confirmed: bool
 
+@dataclass
+class msg_payload_t(Dict):
+    received_at: str
+    battery: int
+    event: str #[16]
+    light: int
+    temperature: float
 
 
-class TTN_database(object):
+class TTN_database:
     
-    def __init__(self, db_filename: str, sql_filename: str):
-        self.db_filename = db_filename
+    def __init__(self, host: str, user: str, password: str, database:str):
+        self.host = host
+        self.user = user
+        self._password = password
+        self.database = database
 
-        sql_file = open(sql_filename, "r")
-        file_data = sql_file.read()
-        sql_file.close()
+
+    def _insert_node_msg_payload(self, payload: msg_payload_t, received_at: str):
+
+        with sql.connect(host=self.host,
+                         user=self.user,
+                         password=self._password,
+                         database=self.database) as sql_connection:
+
+            sql_cursor = sql_connection.cursor()
+
+            sql_cursor.execute(
+                "INSERT INTO node_decoded_payloads (msg_id_time, battery, event, light, temperature) VALUES ( %s, %s, %s, %s, %s )",
+                (
+                    datetime.strptime(received_at[:-4], "%Y-%m-%dT%H:%M:%S.%f"),
+                    payload["battery"],
+                    payload["event"],
+                    payload["light"],
+                    payload["temperature"]
+                ))
+            sql_connection.commit()
+
         
-
-        sql_connection = sql.connect(db_filename)
-        sql_cursor = sql_connection.cursor()
-
-        sql_cursor.executescript(file_data)
-        sql_connection.commit()
-
-        sql_connection.close()
-
     def insert_app(self, app_id: TTN_app_id_t):
         """
         Funció que incerta l'aplicació a la base de dades si no aquesta no hi està.
         """
-        try:
-            sql_connection = sql.connect(self.db_filename)
+        with sql.connect(host=self.host,
+                         user=self.user,
+                         password=self._password,
+                         database=self.database) as sql_connection:
+
             sql_cursor = sql_connection.cursor()
             
             sql_cursor.execute(
-                "SELECT application_id FROM applications WHERE application_id = (?)",
+                "SELECT application_id FROM applications WHERE application_id = %s",
                 (app_id,))
             
             if (sql_cursor.fetchone() == None):
                 sql_cursor.execute(
-                    "INSERT INTO applications (application_id) VALUES ( (?) )",
+                    "INSERT INTO applications (application_id) VALUES ( %s )",
                     (app_id,))
                 sql_connection.commit()
-
-            
-        except KeyboardInterrupt:
-            sql_connection.close()
-            sys.exit(0)
-        sql_connection.close()
+        
 
     
     def insert_device(self, dev_info: device_t):
@@ -83,17 +103,20 @@ class TTN_database(object):
         - Do not comprovate if the TTN Application is registered/inserted into the database.
 
         """
-        try:
-            sql_connection = sql.connect(self.db_filename)
+        with sql.connect(host=self.host,
+                         user=self.user,
+                         password=self._password,
+                         database=self.database) as sql_connection:
+
             sql_cursor = sql_connection.cursor()
 
             sql_cursor.execute(
-                "SELECT device_id FROM devices WHERE device_id = (?)",
+                "SELECT device_id FROM devices WHERE device_id = %s",
                 (dev_info["device_id"],))
         
             if (sql_cursor.fetchone() == None):
                 sql_cursor.execute(
-                    "INSERT INTO devices (device_id, application_id, dev_eui, join_eui, dev_addr) VALUES ((?), (?), (?), (?), (?))",
+                    "INSERT INTO devices (device_id, application_id, dev_eui, join_eui, dev_addr) VALUES (%s, %s, %s, %s, %s)",
                     (
                         dev_info["device_id"],
                         dev_info["application_ids"]["application_id"],
@@ -103,40 +126,22 @@ class TTN_database(object):
                     ))
                 sql_connection.commit()
 
-        except KeyboardInterrupt:
-            sql_connection.close()
-            sys.exit(0)
-        sql_connection.close()
-
     def insert_uplink_msg(self, message: uplink_msg_t, device_id: TTN_dev_id_t):
         """
-        - 
         - Do not comprovate if the device is registered/inserted into the database.
         - Do not comprovate if the there is a message with the same timestamp(primary key) in the database.
         """
-        try:
-            sql_connection = sql.connect(self.db_filename)
+        with sql.connect(host=self.host,
+                         user=self.user,
+                         password=self._password,
+                         database=self.database) as sql_connection:
+
             sql_cursor = sql_connection.cursor()
-            if ("decoded_payload" in message.keys()):
+            with contextlib.suppress(KeyError):
                 sql_cursor.execute(
-                    "INSERT INTO uplink_messages (msg_id_time, device_id, session_key_id, f_port, f_cnt, frm_payload, rx_metadata, settings, consumed_airtime, decoded_payload) VALUES ( (?), (?), (?), (?), (?), (?), (?), (?), (?), (?) )",
+                    "INSERT INTO uplink_messages (msg_id_time, device_id, session_key_id, f_port, f_cnt, frm_payload, rx_metadata, settings, consumed_airtime) VALUES ( %s, %s, %s, %s, %s, %s, %s, %s, %s)",
                     (
-                        message["received_at"],
-                        device_id,
-                        message["session_key_id"],
-                        message["f_port"],
-                        message["f_cnt"],
-                        message["frm_payload"],
-                        str(message["rx_metadata"]),
-                        str(message["settings"]),
-                        message["consumed_airtime"],
-                        str(message["decoded_payload"])
-                    ))
-            else:
-                sql_cursor.execute(
-                    "INSERT INTO uplink_messages (msg_id_time, device_id, session_key_id, f_port, f_cnt, frm_payload, rx_metadata, settings, consumed_airtime) VALUES ( (?), (?), (?), (?), (?), (?), (?), (?), (?) )",
-                    (
-                        message["received_at"],
+                        datetime.strptime(message["received_at"][:-4], "%Y-%m-%dT%H:%M:%S.%f"),
                         device_id,
                         message["session_key_id"],
                         message["f_port"],
@@ -146,10 +151,9 @@ class TTN_database(object):
                         str(message["settings"]),
                         message["consumed_airtime"]
                     ))
-
             sql_connection.commit()
 
-        except KeyboardInterrupt:
-            sql_connection.close()
-            sys.exit(0)
-        sql_connection.close()
+        if ("decoded_payload" in message.keys()):
+            self._insert_node_msg_payload(message["decoded_payload"], message["received_at"])
+
+    
