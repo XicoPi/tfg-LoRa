@@ -54,7 +54,6 @@ def db_connection_handler(host: str, user: str, password: str, database: str):
         yield sql_connection
 
     finally:
-        print("ll")
         sql_connection.close()
 
 
@@ -96,11 +95,10 @@ class TTN_database:
         """
         Funció que incerta l'aplicació a la base de dades si no aquesta no hi està.
         """
-        try:
-            sql_connection = sql.connect(host=self.host,
-                                         user=self.user,
-                                         password=self._password,
-                                         database=self.database)
+        with db_connection_handler(host=self.host,
+                                   user=self.user,
+                                   password=self._password,
+                                   database=self.database) as sql_connection:
 
             sql_cursor = sql_connection.cursor()
             
@@ -114,10 +112,6 @@ class TTN_database:
                     (app_id,))
                 sql_connection.commit()
 
-        finally:
-            sql_connection.close()
-            
-
     
     def insert_device(self, dev_info: device_t):
         """
@@ -125,11 +119,10 @@ class TTN_database:
         - Do not comprovate if the TTN Application is registered/inserted into the database.
 
         """
-        try:
-            sql_connection = sql.connect(host=self.host,
-                                         user=self.user,
-                                         password=self._password,
-                                         database=self.database)
+        with db_connection_handler(host=self.host,
+                                   user=self.user,
+                                   password=self._password,
+                                   database=self.database) as sql_connection:
 
             sql_cursor = sql_connection.cursor()
 
@@ -148,19 +141,16 @@ class TTN_database:
                         dev_info["dev_addr"]
                     ))
                 sql_connection.commit()
-        finally:
-            sql_connection.close()
 
     def insert_uplink_msg(self, message: uplink_msg_t, device_id: TTN_dev_id_t):
         """
         - Do not comprovate if the device is registered/inserted into the database.
         - Do not comprovate if the there is a message with the same timestamp(primary key) in the database.
         """
-        try:
-            sql_connection = sql.connect(host=self.host,
-                                         user=self.user,
-                                         password=self._password,
-                                         database=self.database) 
+        with db_connection_handler(host=self.host,
+                                   user=self.user,
+                                   password=self._password,
+                                   database=self.database) as sql_connection:
 
             sql_cursor = sql_connection.cursor()
             with contextlib.suppress(KeyError):
@@ -178,9 +168,6 @@ class TTN_database:
                         message["consumed_airtime"]
                     ))
             sql_connection.commit()
-
-        finally:
-            sql_connection.close()
 
         if ("decoded_payload" in message.keys()):
             self._insert_node_msg_payload(message["decoded_payload"], message["received_at"])
