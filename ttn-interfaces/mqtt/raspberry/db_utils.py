@@ -55,10 +55,11 @@ class TTN_database:
 
     def _insert_node_msg_payload(self, payload: msg_payload_t, received_at: str):
 
-        with sql.connect(host=self.host,
-                         user=self.user,
-                         password=self._password,
-                         database=self.database) as sql_connection:
+        try:
+            sql_connection = sql.connect(host=self.host,
+                                         user=self.user,
+                                         password=self._password,
+                                         database=self.database)
 
             sql_cursor = sql_connection.cursor()
 
@@ -73,15 +74,18 @@ class TTN_database:
                 ))
             sql_connection.commit()
 
+        finally:
+            sql_connection.close()
         
     def insert_app(self, app_id: TTN_app_id_t):
         """
         Funció que incerta l'aplicació a la base de dades si no aquesta no hi està.
         """
-        with sql.connect(host=self.host,
-                         user=self.user,
-                         password=self._password,
-                         database=self.database) as sql_connection:
+        try:
+            sql_connection = sql.connect(host=self.host,
+                                         user=self.user,
+                                         password=self._password,
+                                         database=self.database)
 
             sql_cursor = sql_connection.cursor()
             
@@ -94,7 +98,10 @@ class TTN_database:
                     "INSERT INTO applications (application_id) VALUES ( %s )",
                     (app_id,))
                 sql_connection.commit()
-        
+
+        finally:
+            sql_connection.close()
+            
 
     
     def insert_device(self, dev_info: device_t):
@@ -103,10 +110,11 @@ class TTN_database:
         - Do not comprovate if the TTN Application is registered/inserted into the database.
 
         """
-        with sql.connect(host=self.host,
-                         user=self.user,
-                         password=self._password,
-                         database=self.database) as sql_connection:
+        try:
+            sql_connection = sql.connect(host=self.host,
+                                         user=self.user,
+                                         password=self._password,
+                                         database=self.database)
 
             sql_cursor = sql_connection.cursor()
 
@@ -125,16 +133,19 @@ class TTN_database:
                         dev_info["dev_addr"]
                     ))
                 sql_connection.commit()
+        finally:
+            sql_connection.close()
 
     def insert_uplink_msg(self, message: uplink_msg_t, device_id: TTN_dev_id_t):
         """
         - Do not comprovate if the device is registered/inserted into the database.
         - Do not comprovate if the there is a message with the same timestamp(primary key) in the database.
         """
-        with sql.connect(host=self.host,
-                         user=self.user,
-                         password=self._password,
-                         database=self.database) as sql_connection:
+        try:
+            sql_connection = sql.connect(host=self.host,
+                                         user=self.user,
+                                         password=self._password,
+                                         database=self.database) 
 
             sql_cursor = sql_connection.cursor()
             with contextlib.suppress(KeyError):
@@ -152,6 +163,9 @@ class TTN_database:
                         message["consumed_airtime"]
                     ))
             sql_connection.commit()
+
+        finally:
+            sql_connection.close()
 
         if ("decoded_payload" in message.keys()):
             self._insert_node_msg_payload(message["decoded_payload"], message["received_at"])
