@@ -54,6 +54,7 @@ def db_connection_handler(host: str, user: str, password: str, database: str):
         yield sql_connection
 
     finally:
+        print("ll")
         sql_connection.close()
 
 
