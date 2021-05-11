@@ -44,7 +44,7 @@ class msg_payload_t(Dict):
     temperature: float
 
 
-@contextlib.contextManager
+@contextlib.contextmanager
 def db_connection_handler(host: str, user: str, password: str, database: str):
     try:
         sql_connection = sql.connect(host=host,
