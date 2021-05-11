@@ -44,6 +44,19 @@ class msg_payload_t(Dict):
     temperature: float
 
 
+@contextlib.contextManager
+def db_connection_handler(host: str, user: str, password: str, database: str):
+    try:
+        sql_connection = sql.connect(host=host,
+                                     user=user,
+                                     password=password,
+                                     database=database)
+        yield sql_connection
+
+    finally:
+        sql_connection.close()
+
+
 class TTN_database:
     
     def __init__(self, host: str, user: str, password: str, database:str):
@@ -55,11 +68,12 @@ class TTN_database:
 
     def _insert_node_msg_payload(self, payload: msg_payload_t, received_at: str):
 
-        try:
-            sql_connection = sql.connect(host=self.host,
-                                         user=self.user,
-                                         password=self._password,
-                                         database=self.database)
+        with db_connection_handler(host=self.host,
+                                   user=self.user,
+                                   password=self._password,
+                                   database=self.database) as sql_connection:
+            #sql_connection = sql.connect(host=self.host,
+            #                             
 
             sql_cursor = sql_connection.cursor()
 
@@ -74,8 +88,8 @@ class TTN_database:
                 ))
             sql_connection.commit()
 
-        finally:
-            sql_connection.close()
+        #finally:
+        #    sql_connection.close()
         
     def insert_app(self, app_id: TTN_app_id_t):
         """
