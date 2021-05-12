@@ -67,6 +67,9 @@ class TTN_database:
 
 
     def _insert_node_msg_payload(self, payload: msg_payload_t, received_at: str):
+        """
+        - Function that inserts the payload data into DDBB.
+        """
 
         with db_connection_handler(host=self.host,
                                    user=self.user,
@@ -88,8 +91,6 @@ class TTN_database:
                 ))
             sql_connection.commit()
 
-        #finally:
-        #    sql_connection.close()
         
     def insert_app(self, app_id: TTN_app_id_t):
         """
