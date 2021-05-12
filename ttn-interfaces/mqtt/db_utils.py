@@ -64,7 +64,6 @@ class TTN_database:
                          database=self.database) as sql_connection:
 
             sql_cursor = sql_connection.cursor()
-
             sql_cursor.execute(
                 "INSERT INTO node_decoded_payloads (msg_id_time, battery, event, light, temperature) VALUES ( %s, %s, %s, %s, %s )",
                 (
@@ -87,7 +86,6 @@ class TTN_database:
                          database=self.database) as sql_connection:
 
             sql_cursor = sql_connection.cursor()
-            
             sql_cursor.execute(
                 "SELECT application_id FROM applications WHERE application_id = %s",
                 (app_id,))
@@ -112,7 +110,6 @@ class TTN_database:
                          database=self.database) as sql_connection:
 
             sql_cursor = sql_connection.cursor()
-
             sql_cursor.execute(
                 "SELECT device_id FROM devices WHERE device_id = %s",
                 (dev_info["device_id"],))
