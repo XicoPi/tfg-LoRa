@@ -52,7 +52,6 @@ def db_connection_handler(host: str, user: str, password: str, database: str):
                                      password=password,
                                      database=database)
         yield sql_connection
-
     finally:
         sql_connection.close()
 
@@ -74,12 +73,9 @@ class TTN_database:
         with db_connection_handler(host=self.host,
                                    user=self.user,
                                    password=self._password,
-                                   database=self.database) as sql_connection:
-            #sql_connection = sql.connect(host=self.host,
-            #                             
+                                   database=self.database) as sql_connection:                           
 
             sql_cursor = sql_connection.cursor()
-
             sql_cursor.execute(
                 "INSERT INTO node_decoded_payloads (msg_id_time, battery, event, light, temperature) VALUES ( %s, %s, %s, %s, %s )",
                 (
@@ -102,7 +98,6 @@ class TTN_database:
                                    database=self.database) as sql_connection:
 
             sql_cursor = sql_connection.cursor()
-            
             sql_cursor.execute(
                 "SELECT application_id FROM applications WHERE application_id = %s",
                 (app_id,))
@@ -126,7 +121,6 @@ class TTN_database:
                                    database=self.database) as sql_connection:
 
             sql_cursor = sql_connection.cursor()
-
             sql_cursor.execute(
                 "SELECT device_id FROM devices WHERE device_id = %s",
                 (dev_info["device_id"],))
