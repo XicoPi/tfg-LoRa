@@ -6,42 +6,42 @@ from typing import Dict
 from dataclasses import dataclass
 from datetime import datetime
 
+"""
+Types definitions
+"""
+
 TTN_app_id_t = str
 TTN_dev_id_t = str
-@dataclass
-class ttn_app_t(Dict):
-    application_id: TTN_app_id_t
 
-@dataclass
-class device_t(Dict):
-    device_id: TTN_dev_id_t
-    application_ids: TTN_app_id_t
-    dev_eui: str #[17]
-    join_eui: str #[17]
-    dev_addr: str #[25]
+ttn_app_t = {"application_id": TTN_app_id_t}
 
-@dataclass
-class uplink_msg_t(Dict):
-    #msg_id_time: str
-    #device_id: TTN_dev_id_t #Foreign key: not in received from TTN message
-    received_at: str
-    session_key_id: str
-    f_port: int
-    f_cnt: int
-    frm_payload: str
-    rx_metadata: list
-    settings: dict
-    decoded_payload: dict
-    consumed_airtime: str #[32]
-#    confirmed: bool
+device_t = {
+    "device_id": TTN_dev_id_t,
+    "application_ids": TTN_app_id_t,
+    "dev_eui": str,
+    "join_eui": str,
+    "dev_addr": str
+}
 
-@dataclass
-class msg_payload_t(Dict):
-    received_at: str
-    battery: int
-    event: str #[16]
-    light: int
-    temperature: float
+uplink_msg_t = {
+    "received_at": str,
+    "session_key_id": str,
+    "f_port": int,
+    "f_cnt": int,
+    "frm_payload": str,
+    "rx_metadata": list,
+    "settings": dict,
+    "decoded_payload": dict,
+    "consumed_airtime": str #[32]
+}
+
+msg_payload_t = {
+    "received_at": str,
+    "battery": int,
+    "event": str, #[16]
+    "light": int,
+    "temperature": float
+}
 
 
 class TTN_database:
