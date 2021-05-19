@@ -58,7 +58,7 @@ if __name__ == '__main__':
 
     mqttTopics = ["v3/tfg-enric-garcia@ttn/devices/ttn-node-dev-1/up", "v3/tfg-enric-garcia@ttn/devices/heltec-esp32-lora/up"]
 
-    cred_manager = credential_manager.Credentials_Manager("credentials.txt", reset=False)
+    cred_manager = credential_manager.Credentials_Manager("../credentials.txt", reset=True)
     
     database_obj = db_utils.TTN_database(host=cred_manager.db_auth["host"],
                                          user=cred_manager.db_auth["username"],
