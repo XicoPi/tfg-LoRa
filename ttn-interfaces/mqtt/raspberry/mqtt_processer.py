@@ -56,22 +56,20 @@ def msg_processing(json_message: Json_Msg_t, database_obj: Type[db_utils.TTN_dat
 
 if __name__ == '__main__':
 
-    ttnAuthCredentials = {
-        "username": "tfg-enric-garcia",
-        "password": "NNSXS.FYZDMZTFHFMNAKD2QRJL5N3CTNXCLOKXJH7EBQA.UYDB63MAB4CTWXSLRCXUM7O6NIEMUDVAPA2IBV6ARFJBIZZW4KCA"
-    }
     mqttTopics = ["v3/tfg-enric-garcia@ttn/devices/ttn-node-dev-1/up", "v3/tfg-enric-garcia@ttn/devices/heltec-esp32-lora/up"]
 
-    database_obj = db_utils.TTN_database(host="integracio.epsem.upc.edu",
-                                         user="enric",
-                                         password="loratfg2021",
-                                         database="loraTFG")
+    cred_manager = credential_manager.Credentials_Manager("credentials.txt", reset=False)
     
+    database_obj = db_utils.TTN_database(host=cred_manager.db_auth["host"],
+                                         user=cred_manager.db_auth["username"],
+                                         password=cred_manager.db_auth["password"],
+                                         database=cred_manager.db_auth["database"])    
+
     try:
         while (True):
             MQTT_message = subscribe.simple(
                 topics=mqttTopics,
-                auth=ttnAuthCredentials,
+                auth=cred_manager.ttn_auth,
                 hostname="eu1.cloud.thethings.network",
                 port=1883)
 
