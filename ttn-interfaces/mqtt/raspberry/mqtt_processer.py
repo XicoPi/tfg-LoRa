@@ -3,6 +3,7 @@ import sys
 import paho.mqtt.subscribe as subscribe
 import json
 import db_utils
+import credential_manager
 
 from typing import *
 
