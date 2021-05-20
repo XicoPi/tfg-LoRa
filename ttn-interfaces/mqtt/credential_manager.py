@@ -1,5 +1,22 @@
 import json
 
+ttn_mqtt_auth_t = {
+    "username": str,
+    "password": str
+}
+
+db_auth_t = {
+    "host": str,
+    "username": str,
+    "password": str,
+    "database": str
+}
+
+credentials_set_t = {
+    "ttn_auth": ttn_mqtt_auth_t,
+    "db_auth": db_auth_t
+}
+
 class Credentials_Manager(object):
     def __init__(self,filename: str , reset: bool):
 
@@ -18,7 +35,7 @@ class Credentials_Manager(object):
         self.db_auth = credentials["db_auth"]
         self.filename = filename
 
-    def _get_new_credentials(self) -> dict:
+    def _get_new_credentials(self) -> credential_set_t:
 
         print("The Things Network Authentication\n")
         ttn_auth_credentials = {
