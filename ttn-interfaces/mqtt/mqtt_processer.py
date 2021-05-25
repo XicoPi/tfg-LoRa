@@ -59,10 +59,7 @@ def msg_processing(json_message: Json_Msg_t, database_obj: Type[db_utils.TTN_dat
 
 
 
-
-if __name__ == '__main__':
-
-
+def main():
     mqttTopics = ["v3/tfg-enric-garcia@ttn/devices/ttn-node-dev-1/up", "v3/tfg-enric-garcia@ttn/devices/heltec-esp32-lora/up"]
 
     cred_manager = credential_manager.Credentials_Manager("credentials.txt", reset=False)
@@ -71,7 +68,8 @@ if __name__ == '__main__':
                                          user=cred_manager.db_auth["username"],
                                          password=cred_manager.db_auth["password"],
                                          database=cred_manager.db_auth["database"])
-    
+
+    result = 0
     try:
         while (True):
             MQTT_message = subscribe.simple(
@@ -82,7 +80,19 @@ if __name__ == '__main__':
 
             msg_processing(MQTT_message.payload, database_obj)
     except KeyboardInterrupt:
-        sys.exit(0)
+        result = 0
+    return result
+    
+
+
+
+
+if __name__ == '__main__':
+
+    main()
+    sys.exit(0)
+
+    
 
 
 
