@@ -11,7 +11,8 @@
 
 #include "heltec.h"
 
-#define BAND    433E6  //you can set band here directly,e.g. 868E6,915E6
+#define BAND    868E6  //you can set band here directly,e.g. 868E6,915E6
+#define N_SAMPLES 50
 void setup() {
     //WIFI Kit series V1 not support Vext control
   Heltec.begin(true /*DisplayEnable Enable*/, true /*Heltec.LoRa Disable*/, true /*Serial Enable*/, true /*PABOOST Enable*/, BAND /*long BAND*/);
@@ -21,8 +22,11 @@ void setup() {
   Serial.println("Setup done");
 }
 
-void loop() {
+void loop()
+{
   // try to parse packets
+  uint16_t count;
+  count = 0;
   int packetSize = LoRa.parsePacket();
   if (packetSize) {
     // received a packet
