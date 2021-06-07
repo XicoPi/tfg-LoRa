@@ -42,7 +42,7 @@ def init_main() -> Tuple:
     except:
         result = ({}, {})
     finally:
-        file_db_conf.close()
+        file_mqtt.close()
         file_db_conf.close()
 
     return result
