@@ -70,9 +70,9 @@ def influx_point(device_id: str, timestamp: int, measurement: str, value: float)
     result = {
         "measurement": measurement,
         "tags": {
-            "sensor_id": id
+            "sensor_id": device_id
         },
-        "time": timestamp,
+        "time": timestamp * 10e9,
         "fields": {
             "value": value
         }
