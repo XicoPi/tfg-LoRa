@@ -24,6 +24,9 @@ Parsed_Msg_t = {
 
 
 def init_main() -> Tuple:
+    """
+    Initialitation of the main program.
+    """
     try:
         file_mqtt = open('../../config/mqtt_local.yml', 'r')
         file_db_conf = open('../../config/influx.yml', 'r')
@@ -76,19 +79,36 @@ def influx_point(device_id: str, timestamp: int, measurement: str, value: float)
     }
     return result
 
+def get_msg_info(msg_dict: Parsed_Msg_t) -> Tuple:
+    """
+    Returned value (tuple):
+    (device_id: int, sens_data: dict, timestamp: time)
+
+    sens_data format: 
+    {
+    "sens_type_0": float,
+    "sens_type_1": float,
+    ...
+    }
+    """
+    device_id = msg_dict["end_device_info"]["device_id"]
+    sens_data = msg_dict["uplink_message"]["decoded_payload"]
+    timestamp = time.mktime(time.strptime(msg_dict["received_at"], "%Y-%m-%dT%H:%M:%S.%f"))
+
+    if (device_id == "ttn-node-dev-1"):
+        sens_data.pop("event")
+
+    return (device_id, sens_data, timestamp)
 
 def influx_points(msg_dict: Parsed_Msg_t) -> list:
+    """
+    Appends the points from every sensor in a device's message.
+    """
     try:
-        device_id = msg_dict["end_device_info"]["device_id"]
-
         if "decoded_payload" not in msg_dict["uplink_message"].keys():
             raise(ValueError)
 
-        sens_data = msg_dict["uplink_message"].pop("decoded_payload")
-        sens_data.pop("event")
-
-        string_datetime = msg_dict["received_at"]
-        timestamp = time.mktime(time.strptime(string_datetime, "%Y-%m-%dT%H:%M:%S.%f"))
+        device_id, sens_data, timestamp = get_msg_info(msg_dict)
 
         result = []
         for sensor, value in sens_data.items():
@@ -100,6 +120,9 @@ def influx_points(msg_dict: Parsed_Msg_t) -> list:
 
 
 def influx_insert(iDBconf: dict, msg_dict: Parsed_Msg_t):
+    """
+    Insert the data from device's sensors into DDBB
+    """
     try:
         client = InfluxDBClient(iDBconf["HOST"],
                                 iDBconf["PORT"],
