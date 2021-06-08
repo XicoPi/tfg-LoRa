@@ -72,11 +72,14 @@ def influx_point(device_id: str, timestamp: int, measurement: str, value: float)
         "tags": {
             "sensor_id": device_id
         },
-        "time": timestamp * 10e9,
+        "time": timestamp,
         "fields": {
             "value": value
         }
     }
+    print(timestamp)
+    print(timestamp * 1e9)
+
     return result
 
 def get_msg_info(msg_dict: Parsed_Msg_t) -> Tuple:
