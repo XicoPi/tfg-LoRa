@@ -70,7 +70,7 @@ def influx_point(device_id: str, timestamp: int, measurement: str, value: float)
     result = {
         "measurement": measurement,
         "tags": {
-            "sensor_id": device_id
+            "device_id": device_id
         },
         "time": timestamp * 1000000000,
         "fields": {
@@ -115,7 +115,7 @@ def influx_points(msg_dict: Parsed_Msg_t) -> list:
 
         result = []
         for sensor, value in sens_data.items():
-            result.append(influx_point(sensor, int(timestamp), device_id, float(value)))
+            result.append(influx_point(device_id, int(timestamp), sensor, float(value)))
     except ValueError:
         print(colored("EXCEPTION - Not information in the message", "red"))
         result = []
