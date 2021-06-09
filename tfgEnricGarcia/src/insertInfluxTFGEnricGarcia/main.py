@@ -77,8 +77,6 @@ def influx_point(device_id: str, timestamp: int, measurement: str, value: float)
             "value": value
         }
     }
-    #print(timestamp)
-    #print(timestamp * 1e9)
 
     return result
 
@@ -122,7 +120,7 @@ def influx_points(msg_dict: Parsed_Msg_t) -> list:
     return result
 
 
-def influx_insert(iDBconf: dict, msg_dict: Parsed_Msg_t):
+def influx_insert(iDBconf: dict, msg_dict: dict):
     """
     Insert the data from device's sensors into DDBB
     """
