@@ -2495,7 +2495,7 @@ LoRaMacStatus_t LoRaMacInitialization( LoRaMacPrimitives_t *primitives, LoRaMacC
 
     getPhy.Attribute = PHY_DEF_TX_DR;
     phyParam = RegionGetPhyParam( LoRaMacRegion, &getPhy );
-    LoRaMacParamsDefaults.ChannelsDatarate = phyParam.Value; //agafa EU868_DEFAULT_DATARATE = DR_0 --> region/RegionEU868.h
+    LoRaMacParamsDefaults.ChannelsDatarate = DR_0;//phyParam.Value; //agafa EU868_DEFAULT_DATARATE = DR_0 --> region/RegionEU868.h
 
     getPhy.Attribute = PHY_MAX_RX_WINDOW;
     phyParam = RegionGetPhyParam( LoRaMacRegion, &getPhy );
@@ -2527,7 +2527,7 @@ LoRaMacStatus_t LoRaMacInitialization( LoRaMacPrimitives_t *primitives, LoRaMacC
 
     getPhy.Attribute = PHY_DEF_RX2_DR;
     phyParam = RegionGetPhyParam( LoRaMacRegion, &getPhy );
-    LoRaMacParamsDefaults.Rx2Channel.Datarate = phyParam.Value;
+    LoRaMacParamsDefaults.Rx2Channel.Datarate = DR_0;//phyParam.Value;
 
     getPhy.Attribute = PHY_DEF_UPLINK_DWELL_TIME;
     phyParam = RegionGetPhyParam( LoRaMacRegion, &getPhy );
@@ -3191,7 +3191,9 @@ LoRaMacStatus_t LoRaMacMlmeRequest( MlmeReq_t *mlmeRequest )
             ResetMacParameters( );
 
             altDr.NbTrials = JoinRequestTrials + 1;
-            LoRaMacParams.ChannelsDatarate = RegionAlternateDr( LoRaMacRegion, &altDr );
+	    //enric
+	    LoRaMacParams.ChannelsDatarate = DR_0;//RegionAlternateDr( LoRaMacRegion, &altDr );//*******
+	    //enric - modificat per a evitar esperar 48 intents de connexió
             status = Send( &macHdr, 0, NULL, 0 );
             break;
         }
