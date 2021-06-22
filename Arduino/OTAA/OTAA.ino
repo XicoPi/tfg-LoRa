@@ -58,7 +58,7 @@ uint16_t userChannelsMask[6]={ 0x00FF,0x0000,0x0000,0x0000,0x0000,0x0000 };
 DeviceClass_t  loraWanClass = CLASS_A;
 
 /*the application data transmission duty cycle.  value in [ms].*/
-uint32_t appTxDutyCycle = 150000;
+uint32_t appTxDutyCycle = 15000;
 
 /*OTAA or ABP*/
 bool overTheAirActivation = true;
@@ -126,25 +126,23 @@ static void prepareTxFrame( uint8_t port )
   */
   sensors_event_t event;
   accel.getEvent(&event);
-  
+  sensorDS18B20.requestTemperatures();
   uint8_t strData[LORAWAN_APP_DATA_MAX_SIZE];
   ;//AppDataSize max value is 64
 
   
-  strcpy((char *)appData, "{ax: ");
-  sprintf((char *)strData, "%f,\n", event.acceleration.x);
-  strcat((char *)appData, (char *)strData);
+  sprintf((char *)strData, "%f,", event.acceleration.x);
+  strcpy((char *)appData, (char *)strData);
   
-  strcat((char *)appData, "ay: ");
-  sprintf((char *)strData, "%f,\n", event.acceleration.y);
+  sprintf((char *)strData, "%f,", event.acceleration.y);
   strcat((char *)appData, (char *)strData);
 
-  strcat((char *)appData, "az: ");
-  sprintf((char *)strData, "%f,\n", event.acceleration.z);
+  //strcat((char *)appData, "'az': ");
+  sprintf((char *)strData, "%f,", event.acceleration.z);
   strcat((char *)appData, (char *)strData);
   
-  strcat((char *)appData, "temp: ");
-  sprintf((char *)strData, "%f}", sensorDS18B20.getTempCByIndex(0));
+  //strcat((char *)appData, "'temp': ");
+  sprintf((char *)strData, "%f", sensorDS18B20.getTempCByIndex(0));
   strcat((char *)appData, (char *)strData);
   Serial.println((char *)appData);
   /*appData[0] = 0x00;
@@ -158,7 +156,7 @@ static void prepareTxFrame( uint8_t port )
 void setup()
 {
   Serial.begin(115200);
-  sensorDS18B20.begin();
+  
   while (!Serial);
   SPI.begin(SCK,MISO,MOSI,SS);
   Mcu.init(SS,RST_LoRa,DIO0,DIO1,license);
@@ -168,6 +166,7 @@ void setup()
     Serial.println("  -  Ooops, no ADXL345 detected ... Check your wiring!");
   }
   accel.setRange(ADXL345_RANGE_16_G);
+  sensorDS18B20.begin();
 }
 
 // The loop function is called in an endless loop
@@ -187,6 +186,7 @@ void loop()
     }
     case DEVICE_STATE_SEND:
     {
+      
       prepareTxFrame( appPort );
       LoRaWAN.send(loraWanClass);
       deviceState = DEVICE_STATE_CYCLE;
