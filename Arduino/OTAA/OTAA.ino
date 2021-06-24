@@ -124,12 +124,38 @@ static void prepareTxFrame( uint8_t port )
     temp: float
   }
   */
+
+  int i;
+  uint8_t fifo_buf_length, reg_buf[32];
+  float sampleWindow[32], averageX = 0;
+  fifo_buf_length = accel.readRegister(ADXL345_REG_FIFO_STATUS) & 0b00111111;
+  if (fifo_buf_length >= 32) {
+    i = 0;
+    while (i < 32) {
+      /* Display the results (acceleration is measured in m/s^2) */
+      reg_buf[i] = fifo_buf_length;
+      sampleWindow[i] = accel.getX() * ADXL345_MG2G_MULTIPLIER * SENSORS_GRAVITY_STANDARD;
+      
+      while ( (fifo_buf_length) == (accel.readRegister(ADXL345_REG_FIFO_STATUS) & 0b00111111));
+      fifo_buf_length = accel.readRegister(ADXL345_REG_FIFO_STATUS) & 0b00111111;
+      i++;
+    }
+    averageX = 0;
+    i = 0;
+    while (i < 32) {
+      averageX += sampleWindow[i];
+      i++;  
+    }
+    averageX /= 32;
+  }
+  
   sensors_event_t event;
   accel.getEvent(&event);
   sensorDS18B20.requestTemperatures();
   uint8_t strData[LORAWAN_APP_DATA_MAX_SIZE];
   ;//AppDataSize max value is 64
 
+  
   
   sprintf((char *)strData, "%f,", event.acceleration.x);
   strcpy((char *)appData, (char *)strData);
@@ -142,7 +168,10 @@ static void prepareTxFrame( uint8_t port )
   strcat((char *)appData, (char *)strData);
   
   //strcat((char *)appData, "'temp': ");
-  sprintf((char *)strData, "%f", sensorDS18B20.getTempCByIndex(0));
+  sprintf((char *)strData, "%f,", sensorDS18B20.getTempCByIndex(0));
+  strcat((char *)appData, (char *)strData);
+
+  sprintf((char *)strData, "%f", averageX);
   strcat((char *)appData, (char *)strData);
   Serial.println((char *)appData);
   /*appData[0] = 0x00;
@@ -166,6 +195,8 @@ void setup()
     Serial.println("  -  Ooops, no ADXL345 detected ... Check your wiring!");
   }
   accel.setRange(ADXL345_RANGE_16_G);
+  accel.setDataRate(ADXL345_DATARATE_100_HZ);
+  accel.writeRegister(ADXL345_REG_FIFO_CTL, 0b10011111); //FIFO in Stream Mode
   sensorDS18B20.begin();
 }
 
