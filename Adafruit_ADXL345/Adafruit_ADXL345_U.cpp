@@ -132,7 +132,7 @@ FIFO_regs_values_t Adafruit_ADXL345_Unified::FIFO_multiByteRead(void)
   Wire.requestFrom((uint8_t)_i2caddr, (uint8_t)6, (uint8_t)true);
 
   result.x = (int16_t)(i2cread() | (i2cread() << 8));
-  result.y = (uint16_t)(i2cread() | (i2cread() << 8));
+  result.y = (int16_t)(i2cread() | (i2cread() << 8));
   result.z = (int16_t)(i2cread() | (i2cread() << 8));
   return result;
 }
