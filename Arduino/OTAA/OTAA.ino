@@ -28,6 +28,7 @@
 #include <ESP32_LoRaWAN.h>
 #include <string.h>
 #include <stdio.h>
+#include <math.h>
 #include "Arduino.h"
 //temperature sensor
 #include <OneWire.h>
@@ -92,7 +93,7 @@ uint8_t appPort = 20;
 * Note, that if NbTrials is set to 1 or 2, the MAC will not decrease
 * the datarate, in case the LoRaMAC layer did not receive an acknowledgment
 */
-uint8_t confirmedNbTrials = 8;
+uint8_t confirmedNbTrials = 800;
 
 /*LoraWan debug level, select in arduino IDE tools.
 * None : print basic info.
@@ -126,53 +127,49 @@ static void prepareTxFrame( uint8_t port )
   */
 
   int i;
-  uint8_t fifo_buf_length, reg_buf[32];
-  float sampleWindow[32], averageX = 0;
+  uint8_t fifo_buf_length;
+  FIFO_regs_values_t sampleWindow[32];
+  int32_t averages[3];
   fifo_buf_length = accel.readRegister(ADXL345_REG_FIFO_STATUS) & 0b00111111;
   if (fifo_buf_length >= 32) {
     i = 0;
     while (i < 32) {
-      /* Display the results (acceleration is measured in m/s^2) */
-      reg_buf[i] = fifo_buf_length;
-      sampleWindow[i] = accel.getX() * ADXL345_MG2G_MULTIPLIER * SENSORS_GRAVITY_STANDARD;
-      
-      while ( (fifo_buf_length) == (accel.readRegister(ADXL345_REG_FIFO_STATUS) & 0b00111111));
-      fifo_buf_length = accel.readRegister(ADXL345_REG_FIFO_STATUS) & 0b00111111;
+      sampleWindow[i] = accel.FIFO_multiByteRead();
+      delayMicroseconds(6);
       i++;
     }
-    averageX = 0;
+    averages[0] = 0;
+    averages[1] = 0;
+    averages[2] = 0;
     i = 0;
     while (i < 32) {
-      averageX += sampleWindow[i];
+      averages[0] += sampleWindow[i].x;
+      averages[1] += sampleWindow[i].y;
+      averages[2] += sampleWindow[i].z;
       i++;  
     }
-    averageX /= 32;
   }
   
-  sensors_event_t event;
-  accel.getEvent(&event);
   sensorDS18B20.requestTemperatures();
   uint8_t strData[LORAWAN_APP_DATA_MAX_SIZE];
-  ;//AppDataSize max value is 64
+  //AppDataSize max value is 64
 
   
   
-  sprintf((char *)strData, "%f,", event.acceleration.x);
+  sprintf((char *)strData, "%f,", (sqrt(pow(averages[0], 2) / 32)) * ADXL345_MG2G_MULTIPLIER);
   strcpy((char *)appData, (char *)strData);
   
-  sprintf((char *)strData, "%f,", event.acceleration.y);
+  sprintf((char *)strData, "%f,", (sqrt(pow(averages[1], 2) / 32)) * ADXL345_MG2G_MULTIPLIER);
   strcat((char *)appData, (char *)strData);
 
   //strcat((char *)appData, "'az': ");
-  sprintf((char *)strData, "%f,", event.acceleration.z);
+  sprintf((char *)strData, "%f,", (sqrt(pow(averages[2], 2) / 32)) * ADXL345_MG2G_MULTIPLIER);
   strcat((char *)appData, (char *)strData);
   
   //strcat((char *)appData, "'temp': ");
   sprintf((char *)strData, "%f,", sensorDS18B20.getTempCByIndex(0));
   strcat((char *)appData, (char *)strData);
 
-  sprintf((char *)strData, "%f", averageX);
-  strcat((char *)appData, (char *)strData);
   Serial.println((char *)appData);
   /*appData[0] = 0x00;
   appData[1] = 0x01;
