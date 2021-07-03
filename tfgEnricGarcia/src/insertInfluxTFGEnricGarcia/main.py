@@ -10,7 +10,7 @@ import paho.mqtt.subscribe as mqtt_subscribe
 from influxdb import InfluxDBClient
 from termcolor import cprint, colored
 from typing import *
-
+from curses import ascii
 
 Json_Msg_t = str
 Parsed_Msg_t = {
@@ -56,7 +56,7 @@ def msg_parse(msg: Json_Msg_t) -> Parsed_Msg_t:
 
     end_device_info = parsed_msg["end_device_ids"] 
     uplink_msg = parsed_msg["uplink_message"]
-    received_at = parsed_msg["received_at"][:-4]
+    received_at = time.time() #time.mktime(time.strptime(parsed_msg["received_at"][:-4], "%Y-%m-%dT%H:%M:%S.%f"))
     result = {
         "end_device_info": end_device_info,
         "uplink_message": uplink_msg,
@@ -80,6 +80,17 @@ def influx_point(device_id: str, timestamp: int, measurement: str, value: float)
 
     return result
 
+def get_event2int_ttn_device(sens_data: dict) -> int:
+
+    result = -1
+    if (sens_data["event"] == "interval"):
+        result = 0
+    elif (sens_data["event"] == "button"):
+        result = 1
+    elif (sens_data["event"] == "motion"):
+        result = 2
+    return result
+
 def get_msg_info(msg_dict: Parsed_Msg_t) -> Tuple:
     """
     Returned value (tuple):
@@ -94,10 +105,28 @@ def get_msg_info(msg_dict: Parsed_Msg_t) -> Tuple:
     """
     device_id = msg_dict["end_device_info"]["device_id"]
     sens_data = msg_dict["uplink_message"]["decoded_payload"]
-    timestamp = time.mktime(time.strptime(msg_dict["received_at"], "%Y-%m-%dT%H:%M:%S.%f"))
+    timestamp = msg_dict["received_at"]
+    #print(sens_data, device_id)
 
     if (device_id == "ttn-node-dev-1"):
-        sens_data.pop("event")
+        #sens_data.pop("event")
+        sens_data["event"] = get_event2int_ttn_device(sens_data)
+    elif (device_id == "heltec-esp32-lora"):
+        stringData = ""
+        print()
+        for byte in sens_data["bytes"]:
+            stringData += ascii.unctrl(byte)
+        
+        
+        sens_data_list = stringData.split(",")
+        sens_data = {}
+        sens_data["ax"] = float(sens_data_list[0])
+        sens_data["ay"] = float(sens_data_list[1])
+        sens_data["az"] = float(sens_data_list[2])
+        sens_data["temp"] = float(sens_data_list[3])
+        
+        #sens_data = dict(stringData)
+        #print(stringData)
 
     return (device_id, sens_data, timestamp)
 
@@ -105,12 +134,13 @@ def influx_points(msg_dict: Parsed_Msg_t) -> list:
     """
     Appends the points from every sensor in a device's message.
     """
+    result = []
     try:
         if "decoded_payload" not in msg_dict["uplink_message"].keys():
             raise(ValueError)
 
         device_id, sens_data, timestamp = get_msg_info(msg_dict)
-
+        print(sens_data)
         result = []
         for sensor, value in sens_data.items():
             result.append(influx_point(device_id, int(timestamp), sensor, float(value)))
