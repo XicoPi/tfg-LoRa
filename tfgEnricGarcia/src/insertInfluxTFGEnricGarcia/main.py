@@ -11,7 +11,8 @@ from influxdb import InfluxDBClient
 from termcolor import cprint, colored
 from typing import *
 from curses import ascii
-
+from application import *
+from device import *
 Json_Msg_t = str
 Parsed_Msg_t = {
     "end_device_ids": str,
@@ -21,30 +22,25 @@ Parsed_Msg_t = {
 }
 
 
-
+ttnApplication = TTNApplication()
 
 def init_main() -> Tuple:
     """
     Initialitation of the main program.
     """
     try:
-        file_mqtt = open('../../config/mqtt_local.yml', 'r')
         file_db_conf = open('../../config/influx.yml', 'r')
-
-        Lmqtt = yaml.safe_load(file_mqtt)
-        Lmqtt["TOPICS"] = [
-            "v3/tfg-enric-garcia@ttn/devices/ttn-node-dev-1/up",
-            "v3/tfg-enric-garcia@ttn/devices/heltec-esp32-lora/up"
-        ]
-       
         iDBconf = yaml.safe_load(file_db_conf)
-        result = (Lmqtt, iDBconf)
     except:
-        result = ({}, {})
+        print("error")
+        iDBconf = {}
     finally:
-        file_mqtt.close()
+        #file_mqtt.close()
         file_db_conf.close()
-
+        
+    ttnApplication.addAllDevicesTopic("up")
+    #print(ttnApplication.getDevices())
+    result = iDBconf
     return result
 
 
@@ -80,53 +76,22 @@ def influx_point(device_id: str, timestamp: int, measurement: str, value: float)
 
     return result
 
-def get_event2int_ttn_device(sens_data: dict) -> int:
 
-    result = -1
-    if (sens_data["event"] == "interval"):
-        result = 0
-    elif (sens_data["event"] == "button"):
-        result = 1
-    elif (sens_data["event"] == "motion"):
-        result = 2
-    return result
 
 def get_msg_info(msg_dict: Parsed_Msg_t) -> Tuple:
     """
     Returned value (tuple):
     (device_id: int, sens_data: dict, timestamp: time)
-
-    sens_data format: 
-    {
-    "sens_type_0": float,
-    "sens_type_1": float,
-    ...
-    }
     """
     device_id = msg_dict["end_device_info"]["device_id"]
     sens_data = msg_dict["uplink_message"]["decoded_payload"]
     timestamp = msg_dict["received_at"]
     #print(sens_data, device_id)
-
-    if (device_id == "ttn-node-dev-1"):
-        #sens_data.pop("event")
-        sens_data["event"] = get_event2int_ttn_device(sens_data)
-    elif (device_id == "heltec-esp32-lora"):
-        stringData = ""
-        print()
-        for byte in sens_data["bytes"]:
-            stringData += ascii.unctrl(byte)
-        
-        
-        sens_data_list = stringData.split(",")
-        sens_data = {}
-        sens_data["ax"] = float(sens_data_list[0])
-        sens_data["ay"] = float(sens_data_list[1])
-        sens_data["az"] = float(sens_data_list[2])
-        sens_data["temp"] = float(sens_data_list[3])
-        
-        #sens_data = dict(stringData)
-        #print(stringData)
+    for deviceObj in ttnApplication:
+        print(deviceObj.getId())
+        if (deviceObj.getId() == device_id):
+            sens_data = deviceObj.executeCallback(sens_data)
+            break;
 
     return (device_id, sens_data, timestamp)
 
@@ -168,19 +133,20 @@ def influx_insert(iDBconf: dict, msg_dict: dict):
 
 def main():
 
-    Lmqtt, iDBconf = init_main()
+    iDBconf = init_main()
     mqtt_auth_credentials = {
-        "username": Lmqtt["USER"],
-        "password": Lmqtt["PWD"]
+        "username": ttnApplication.getMqttConfig()["USER"],
+        "password": ttnApplication.getMqttConfig()["PWD"]
     }
 
     try:
         while True:
             MQTT_message = mqtt_subscribe.simple(
-                topics=Lmqtt["TOPICS"],
+                topics=ttnApplication.getDevicesTopics(),
                 auth=mqtt_auth_credentials,
-                hostname=Lmqtt["HOST"],
-                port=Lmqtt["PORT"])
+                hostname=ttnApplication.getMqttConfig()["HOST"],
+                port=ttnApplication.getMqttConfig()["PORT"]
+            )
 
             msg_dict = msg_parse(MQTT_message.payload)
             #print(msg_dict)
@@ -188,9 +154,7 @@ def main():
             influx_insert(iDBconf, msg_dict)
     except KeyboardInterrupt:
         result = 0
-    #except Exception as exc:
-    #    print(exc)
-    #    result = 1
+
     return result
     
     
