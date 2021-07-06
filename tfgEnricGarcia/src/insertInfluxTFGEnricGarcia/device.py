@@ -1,12 +1,17 @@
 import importlib
+import sys
 class Device(object):
 
     def __init__(self, device_id: str, callbackLibPath: str):
         self._device_id = device_id
         self._topics = []
         print(callbackLibPath)
-        self._callbackModule = importlib.machinery.SourceFileLoader(device_id, callbackLibPath).load_module()
-        #self._msgCallback = devCallback
+        try:
+            self._callbackModule = importlib.machinery.SourceFileLoader(device_id, callbackLibPath).load_module()
+        except FileNotFoundError:
+            print("File not found")
+            sys.exit(-1)
+            #self._msgCallback = devCallback
     def __str__(self):
         return self.getId()
     def __getitem__(self, index: int) -> str:

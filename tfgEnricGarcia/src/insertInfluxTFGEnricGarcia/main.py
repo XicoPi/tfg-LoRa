@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding:utf-8 -*-
-
+import socket
 import time
 import json
 import yaml
@@ -141,12 +141,15 @@ def main():
 
     try:
         while True:
-            MQTT_message = mqtt_subscribe.simple(
-                topics=ttnApplication.getDevicesTopics(),
-                auth=mqtt_auth_credentials,
-                hostname=ttnApplication.getMqttConfig()["HOST"],
-                port=ttnApplication.getMqttConfig()["PORT"]
-            )
+            try:
+                MQTT_message = mqtt_subscribe.simple(
+                    topics=ttnApplication.getDevicesTopics(),
+                    auth=mqtt_auth_credentials,
+                    hostname=ttnApplication.getMqttConfig()["HOST"],
+                    port=ttnApplication.getMqttConfig()["PORT"]
+                )
+            except socket.timeout:
+                continue
 
             msg_dict = msg_parse(MQTT_message.payload)
             #print(msg_dict)
