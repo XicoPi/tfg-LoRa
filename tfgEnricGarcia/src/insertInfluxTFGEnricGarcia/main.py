@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding:utf-8 -*-
 import socket
+import requests
 import time
 import json
 import yaml
@@ -127,6 +128,8 @@ def influx_insert(iDBconf: dict, msg_dict: dict):
                                 iDBconf["DB"])
 
         client.write_points(influx_points(msg_dict))
+    except requests.exceptions.ConnectionError:
+        pass
     finally:
         client.close()
 
@@ -149,6 +152,8 @@ def main():
                     port=ttnApplication.getMqttConfig()["PORT"]
                 )
             except socket.timeout:
+                continue
+            except requests.exceptions.ConnectionError:
                 continue
 
             msg_dict = msg_parse(MQTT_message.payload)
