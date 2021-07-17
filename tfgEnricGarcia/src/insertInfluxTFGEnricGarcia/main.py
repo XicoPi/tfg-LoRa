@@ -93,7 +93,10 @@ def get_msg_info(msg_dict: Parsed_Msg_t) -> Tuple:
         if (deviceObj.getId() == device_id):
             sens_data = deviceObj.executeCallback(sens_data)
             break;
-
+    sens_data.update(msg_dict["uplink_message"]["settings"]["data_rate"]["lora"])
+    msg_dict["uplink_message"]["settings"].pop("data_rate")
+    sens_data.update(msg_dict["uplink_message"]["settings"])
+    sens_data.pop("timestamp"); sens_data.pop("time")
     return (device_id, sens_data, timestamp)
 
 def influx_points(msg_dict: Parsed_Msg_t) -> list:
