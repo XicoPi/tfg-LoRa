@@ -1,3 +1,4 @@
+from curses import ascii
 def devCallback(msg) -> dict:
     string_data = ""
     for byte in msg["bytes"]:
